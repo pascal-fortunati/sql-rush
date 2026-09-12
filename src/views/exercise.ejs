@@ -102,9 +102,15 @@
                   <%= isExam?'ta-reponse.sql':'requete.sql' %>
                 </label>
                 <span class="editor-shortcut">
-                  <% if(isExam||isSprint){ %>Une seule validation<% } else { %><kbd class="kbd kbd-xs">Ctrl</kbd><kbd
-                        class="kbd kbd-xs">Entrée</kbd>
-                      <% } %>
+                  <% if(isExam){ %>Une seule validation<% } else { %><kbd class="kbd kbd-xs">Entrée</kbd><span><%= isSprint?'Valider':'Exécuter' %></span>
+                    <span class="tooltip [--placement:bottom]">
+                      <button type="button" class="tooltip-toggle btn btn-text btn-square btn-xs editor-keys"
+                        aria-label="Raccourcis : Maj + Entrée pour une nouvelle ligne, Tab pour compléter, Ctrl + Espace pour afficher les suggestions"><span
+                          class="material-symbols-rounded" aria-hidden="true">keyboard</span></button>
+                      <span class="tooltip-content tooltip-shown:opacity-100 tooltip-shown:visible" role="tooltip"><span
+                          class="tooltip-body editor-keys-body"><span><kbd class="kbd kbd-xs">Maj</kbd>+<kbd class="kbd kbd-xs">Entrée</kbd> nouvelle ligne</span><span><kbd class="kbd kbd-xs">Tab</kbd> compléter</span><span><kbd class="kbd kbd-xs">Ctrl</kbd>+<kbd class="kbd kbd-xs">Espace</kbd> suggestions</span></span></span>
+                    </span>
+                  <% } %>
                 </span>
               </div>
               <textarea class="textarea sql-editor" id="sql-query" aria-describedby="editor-help" spellcheck="false"
@@ -201,6 +207,11 @@
           </div>
           <% } %>
       </div>
+      <% if(!isExam){ %>
+        <%# Métadonnées d'autocomplétion : noms de tables et de colonnes visibles, jamais de solution, d'indice ni de valeur. %>
+        <script type="application/json" id="sql-schema"><%- JSON.stringify({ tables: tables.map(t => ({ name: t.name, rows: t.rows.length, columns: t.columns.map(c => ({ name: c.name, type: c.type || '' })) })) }).replace(/</g, '\\u003c') %></script>
+      <% } %>
       <script src="/js/sql-table.js" defer></script>
+      <script src="/js/sql-editor.js" defer></script>
       <script src="/js/exercise.js" defer></script>
       <%- include('partials/end') %>

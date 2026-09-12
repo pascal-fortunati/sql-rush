@@ -1185,6 +1185,85 @@
     min-height: 236px
   }
 
+  /* Monaco occupe la zone de l'ancien textarea ; sa hauteur minimale reprend celle du textarea. */
+  .sql-monaco {
+    position: relative;
+    width: 100%;
+    min-height: 168px;
+    background: var(--color-base-200)
+  }
+
+  [data-theme="dark"] .sql-monaco {
+    background: #15271f
+  }
+
+  .sql-monaco::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+    box-shadow: inset 0 0 0 2px transparent;
+    transition: box-shadow .15s
+  }
+
+  .sql-monaco:focus-within::after {
+    box-shadow: inset 0 0 0 2px var(--color-primary)
+  }
+
+  .sql-monaco-placeholder {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 4;
+    pointer-events: none;
+    font: 15px/26px var(--font-mono);
+    color: color-mix(in srgb, var(--color-base-content) 62%, transparent);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis
+  }
+
+  [data-theme="dark"] .sql-monaco-placeholder {
+    color: #8ba28e
+  }
+
+  .editor-keys.btn {
+    width: 24px;
+    height: 24px;
+    min-height: 24px;
+    margin-inline-start: 2px;
+    color: inherit
+  }
+
+  .editor-keys .material-symbols-rounded {
+    font-size: 17px
+  }
+
+  .editor-keys-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: 11.5px;
+    white-space: nowrap
+  }
+
+  .editor-keys-body .kbd,
+  .next-kbd .kbd {
+    background: transparent;
+    color: inherit;
+    border-color: color-mix(in srgb, currentColor 45%, transparent);
+    box-shadow: none
+  }
+
+  .next-kbd {
+    display: inline-flex;
+    gap: 3px;
+    margin-inline-start: 4px;
+    opacity: .9
+  }
+
   .editor-actions {
     padding: 9px 12px;
     display: flex;

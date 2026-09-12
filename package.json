@@ -30,7 +30,8 @@
     "flyonui": "^2.4.1",
     "helmet": "^8.3.0",
     "jquery": "^4.0.0",
-    "material-symbols": "^0.47.2"
+    "material-symbols": "^0.47.2",
+    "monaco-editor": "^0.56.0"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",

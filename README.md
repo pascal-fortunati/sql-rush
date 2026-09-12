@@ -42,7 +42,7 @@ Il suffit ensuite de cliquer sur **Créer mon compte**. Aucun compte ni mot de p
 
 1. Crée `.env` si nécessaire, avec un secret de session aléatoire.
 2. Crée `data/app.db`, ses tables et les métadonnées des exercices et des badges.
-3. Copie en local les composants FlyonUI, les polices et les icônes, puis compile Tailwind CSS.
+3. Copie en local les composants FlyonUI, Monaco Editor, les polices et les icônes, puis compile Tailwind CSS.
 4. Exécute les 264 solutions dans le moteur isolé de l'application, pour vérifier la banque.
 
 La commande est réexécutable et conserve les comptes et la progression. `npm run dev` surveille le serveur et le CSS ; `Ctrl+C` arrête les deux. Après l'installation, aucun CDN n'est nécessaire : polices, icônes et composants sont servis localement.
@@ -64,14 +64,32 @@ La commande est réexécutable et conserve les comptes et la progression. `npm r
 - Catalogue des 264 exercices avec **recherche et filtres** (niveau, état de progression), pagination et question aléatoire.
 - Filtres construits avec le composant **FlyonUI Advanced Select** (listes déroulantes avec recherche intégrée).
 - Consigne, notion, difficulté, contexte, tables et onglets FlyonUI **Données / Structure**.
-- Éditeur monospace sans autocomplétion, brouillon local par utilisateur et par exercice, exécution avec `Ctrl+Entrée` ou `Cmd+Entrée`.
+- Éditeur **Monaco** en mode SQL (coloration des mots-clés, chaînes, nombres et commentaires), thèmes clair/sombre synchronisés avec le site, brouillon local par utilisateur et par exercice.
 - Résultats tabulaires : NULL explicites, temps d'exécution, nombre de lignes et aperçu de l'état après modification.
 - Trois indices progressifs (rappel, piste précise, structure à compléter), puis solution commentée sur demande confirmée.
 - Messages d'erreur pédagogiques : colonne ou table inconnue, syntaxe, agrégats, clés et contraintes.
 
+#### Autocomplétion pédagogique
+
+L'autocomplétion aide à **écrire** du SQL, jamais à résoudre la question. Ses seules sources sont les mots-clés et fonctions SQL génériques acceptés par le moteur, les **tables et colonnes du schéma affiché** et les alias tapés par l'étudiant (`FROM hotels h` → `h.` propose les colonnes de `hotels`). Les suggestions sont légèrement contextuelles : tables après `FROM`/`JOIN`, colonnes après `SELECT`, `WHERE`, `ORDER BY`, `GROUP BY`.
+
+Elle n'utilise jamais la solution, les indices, la correction ni la consigne, et ne propose aucune valeur des données (`ville`, oui ; `'Toulon'`, non). Le bac à sable suit la base sélectionnée ; le Mode Examen n'a **aucune** autocomplétion.
+
+#### Raccourcis clavier
+
+| Raccourci | Entraînement, Sprint, Bac à sable |
+| --- | --- |
+| `Entrée` | Exécuter / valider la requête |
+| `Maj+Entrée` | Nouvelle ligne |
+| `Tab` | Accepter la suggestion (`Échap` ferme la liste, `Entrée` ne l'accepte jamais) |
+| `Ctrl+Espace` | Afficher les suggestions |
+| `Ctrl+Entrée` / `Cmd+Entrée` | Exercice suivant après une réussite, sinon exécuter |
+
+Les boutons restent disponibles pour chaque action.
+
 ### Mode Examen / Jury
 
-Une question tirée au sort, interface épurée, **aucun indice** et aucun rappel de syntaxe. La solution n'est pas envoyée dans la page, et aucun SQL n'est exécuté pendant la saisie : même `Ctrl+Entrée` est désactivé. Le bouton **J'ai terminé** valide une seule fois, affiche le résultat et la correction, puis permet de tirer une autre question.
+Une question tirée au sort, interface épurée, **aucun indice**, aucun rappel de syntaxe et **aucune autocomplétion** (l'éditeur Monaco ne garde que la coloration). La solution n'est pas envoyée dans la page, et aucun SQL n'est exécuté pendant la saisie : `Entrée` écrit une nouvelle ligne et `Ctrl+Entrée` est désactivé. Le bouton **J'ai terminé** valide une seule fois, affiche le résultat et la correction, puis permet de tirer une autre question.
 
 Un chrono mesure le temps sans imposer de limite, et le bouton **Masquer la base** permet à un collègue de jouer l'examinateur. Les 264 consignes sont utilisables dans ce mode.
 
@@ -136,6 +154,7 @@ Les jeux de données sont pédagogiques : données fictives, doublons utiles, va
 - **EJS** et **JavaScript** vanilla (pas de framework front)
 - **Tailwind CSS 4**
 - **FlyonUI 2**, dont **FlyonUI Advanced Select** et **FlyonUI DataTables**
+- **Monaco Editor** (build local, chargé uniquement sur les pages d'exercice)
 - **SQLite** via **better-sqlite3**
 - **bcrypt** pour les mots de passe
 - **express-session** avec stockage SQLite

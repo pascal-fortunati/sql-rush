@@ -1,14 +1,25 @@
 (() => {
   const workspace = document.getElementById('sql-workspace'); if (!workspace) return;
   const { mode, exerciseId, datasetId, runId, userId } = workspace.dataset;
-  const editor = document.getElementById('sql-query'); const runButton = document.getElementById('run-query'); const resetButton = document.getElementById('reset-query');
+  const textarea = document.getElementById('sql-query'); const runButton = document.getElementById('run-query'); const resetButton = document.getElementById('reset-query');
   const panel = document.getElementById('result-panel'); const token = document.querySelector('meta[name="csrf-token"]').content;
   const sticky = document.getElementById('sticky-actions'); const stickyNext = document.getElementById('sticky-next'); const stickyStatus = document.getElementById('sticky-status');
-  const timed = mode === 'exam' || mode === 'sprint'; let running = false; let submitted = false; let watcher = null;
+  const timed = mode === 'exam' || mode === 'sprint'; let running = false; let submitted = false; let solved = false; let watcher = null;
   const smooth = () => matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth';
+  const finePointer = () => matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const modKey = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent) ? '⌘' : 'Ctrl';
+  // Monaco remplace le textarea une fois chargé ; le textarea reste l'éditeur de secours.
+  let monacoEditor = null;
+  const editor = {
+    get value() { return monacoEditor ? monacoEditor.getValue() : textarea.value; },
+    set value(text) { if (monacoEditor) monacoEditor.setValue(text); else textarea.value = text; },
+    set readOnly(state) { textarea.readOnly = state; monacoEditor?.setReadOnly(state); },
+    focus() { if (monacoEditor) monacoEditor.focus(); else textarea.focus(); }
+  };
   const draftKey = `sqlrush-draft:${userId}:${mode}:${runId || exerciseId}`;
-  try { editor.value = localStorage.getItem(draftKey) || ''; } catch { }
-  editor.addEventListener('input', () => { try { localStorage.setItem(draftKey, editor.value); } catch { } });
+  const saveDraft = () => { try { localStorage.setItem(draftKey, editor.value); } catch { } };
+  try { textarea.value = localStorage.getItem(draftKey) || ''; } catch { }
+  textarea.addEventListener('input', saveDraft);
   const element = (tag, classes, text) => { const el = document.createElement(tag); if (classes) el.className = classes; if (text !== undefined) el.textContent = text; return el; };
   const icon = name => { const el = element('span', 'material-symbols-rounded', name); el.setAttribute('aria-hidden', 'true'); return el; };
   async function post(url, body = {}) {
@@ -74,7 +85,13 @@
     if (data.done || data.correct) {
       const next = element('a', 'btn result-next ' + (data.correct ? 'btn-primary' : 'btn-outline'));
       next.id = 'next-exercise'; next.href = data.nextUrl || workspace.dataset.nextUrl || '/training';
-      next.append(document.createTextNode(timed ? (mode === 'exam' ? 'Question suivante' : 'Continuer le sprint') : 'Exercice suivant'), icon('arrow_forward'));
+      const label = timed ? (mode === 'exam' ? 'Question suivante' : 'Continuer le sprint') : 'Exercice suivant';
+      next.append(document.createTextNode(label), icon('arrow_forward'));
+      if (data.correct && mode !== 'exam') {
+        const keys = element('span', 'next-kbd'); keys.setAttribute('aria-hidden', 'true');
+        keys.append(element('kbd', 'kbd kbd-xs', modKey), element('kbd', 'kbd kbd-xs', 'Entrée'));
+        next.append(keys); next.title = `${label} (${modKey} + Entrée)`; next.setAttribute('aria-keyshortcuts', 'Control+Enter Meta+Enter');
+      }
       bar.append(next);
     }
     panel.append(bar);
@@ -96,7 +113,10 @@
     if (next && data.correct) armSticky(next, `Correct · +${data.xp || 0} XP`);
     else if (next) armSticky(next, 'Réponse enregistrée');
     else releaseSticky();
-    panel.tabIndex = -1; panel.focus({ preventScroll: true });
+    solved = !!data.correct;
+    // Au clavier, le focus revient dans l'éditeur pour enchaîner (le panneau reste annoncé via aria-live).
+    if (mode !== 'exam' && finePointer()) editor.focus();
+    else { panel.tabIndex = -1; panel.focus({ preventScroll: true }); }
     const box = panel.getBoundingClientRect();
     if (box.top < 0 || box.top > innerHeight - 140) panel.scrollIntoView({ behavior: smooth(), block: 'nearest' });
   }
@@ -116,8 +136,31 @@
     finally { running = false; runButton.innerHTML = previous; runButton.disabled = submitted; resetButton.disabled = submitted; editor.readOnly = submitted; panel.setAttribute('aria-busy', 'false'); }
   }
   runButton.addEventListener('click', execute);
-  editor.addEventListener('keydown', event => { if (!timed && (event.ctrlKey || event.metaKey) && event.key === 'Enter') { event.preventDefault(); execute(); } });
-  resetButton.addEventListener('click', () => { editor.value = ''; editor.dispatchEvent(new Event('input')); editor.focus(); });
+  /* Raccourcis (hors Mode Examen) : Entrée exécute, Maj+Entrée ajoute une ligne,
+     Ctrl/Cmd+Entrée passe à la suite après une réussite, sinon exécute. */
+  const goNext = () => { const next = document.getElementById('next-exercise'); if (!solved || !next) return false; location.href = next.href; return true; };
+  const runOrNext = () => { if (!goNext()) execute(); };
+  textarea.addEventListener('keydown', event => {
+    if (event.key !== 'Enter' || event.shiftKey || event.altKey || mode === 'exam') return;
+    event.preventDefault(); if (event.ctrlKey || event.metaKey) runOrNext(); else execute();
+  });
+  document.addEventListener('keydown', event => {
+    if (mode === 'exam' || event.defaultPrevented || event.key !== 'Enter' || !(event.ctrlKey || event.metaKey)) return;
+    if (goNext()) event.preventDefault();
+  });
+  resetButton.addEventListener('click', () => { editor.value = ''; saveDraft(); editor.focus(); });
+  document.querySelector('.editor-file')?.addEventListener('click', event => { if (monacoEditor) { event.preventDefault(); editor.focus(); } });
+  document.addEventListener('DOMContentLoaded', () => {
+    // Monaco est chargé après les scripts FlyonUI (son loader AMD modifierait leur enregistrement UMD).
+    const schemaNode = document.getElementById('sql-schema');
+    window.SqlEditor?.mount(textarea, {
+      assist: mode !== 'exam', keys: mode === 'exam' ? 'exam' : 'run', schema: schemaNode ? JSON.parse(schemaNode.textContent) : null,
+      onRun: execute, onControlEnter: runOrNext, onChange: saveDraft
+    }).then(instance => {
+      monacoEditor = instance; instance.setReadOnly(submitted || running);
+      if (mode !== 'exam' && finePointer() && !document.activeElement?.closest('input, select, textarea, button, a, [contenteditable]')) instance.focus();
+    }).catch(error => console.warn('Éditeur Monaco indisponible, textarea conservé :', error)); // le textarea reste utilisable
+  });
   const hints = document.getElementById('hint-button');
   hints?.addEventListener('click', async () => { hints.disabled = true; try { const data = await post(`/api/exercises/${exerciseId}/hint`); document.getElementById('hints-list').replaceChildren(...data.hints.map(h => element('li', '', h))); document.getElementById('hint-count').textContent = data.hintsUsed; document.getElementById('hints-panel').classList.remove('hidden'); } catch (error) { showError(error.message); } finally { hints.disabled = false; } });
   const solutionModal = document.getElementById('solution-modal'); const confirmSolution = document.getElementById('confirm-solution');
