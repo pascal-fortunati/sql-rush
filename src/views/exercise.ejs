@@ -1,0 +1,206 @@
+<%- include('partials/start',{wide:true}) %>
+  <%
+  /* La table citée par la consigne guide l'affichage : elle est ouverte d'emblée dans la base. */
+  const cited=tables.findIndex(t=>new RegExp('\\b'+t.name+'\\b').test(exercise.statement||''));
+  const openIndex=Math.max(0,cited>=0?cited:tables.findIndex(t=>t.name===exercise.table));
+%>
+    <% const isExam=mode==='exam' ; const isSprint=mode==='sprint' ; const isPlayground=mode==='playground' ; const
+      isTraining=mode==='training' ; %>
+      <div id="sql-workspace" class="workspace" data-mode="<%= mode %>" data-exercise-id="<%= exercise.id %>"
+        data-dataset-id="<%= exercise.datasetId||exercise.id %>" data-run-id="<%= run?.id||'' %>"
+        data-next-url="<%= nextUrl||'' %>" data-user-id="<%= user.id %>">
+
+        <section class="card mission-card" aria-labelledby="mission-title">
+          <div class="mission-top">
+            <p class="eyebrow mission-eyebrow">
+              <%= isExam?'Mode Examen — Question au tableau':isSprint?'Sprint SQL':isPlayground?'Exploration libre':'L’atelier · Exercice '+String(number).padStart(3,' 0') %>
+            </p>
+            <div class="mission-badges">
+              <% if(run){ %><span class="badge badge-outline font-mono" id="clock" data-start="<%= run.startedAt %>"
+                  aria-label="Temps écoulé">00:00</span>
+                <% } %>
+                  <% if(isSprint){ %><span class="badge badge-soft badge-primary">Question <%= run.current %> / <%=
+                          run.total %></span>
+                    <% } %>
+                      <% if(!isPlayground){ %><span class="badge badge-meta badge-sm">Niveau <%= exercise.level %> · <%=
+                              exercise.tags[0] %></span><span class="badge badge-meta badge-sm">
+                          <%= exercise.difficulty %>
+                        </span>
+                        <% if(!isExam){ %><span class="badge badge-soft badge-primary badge-sm">+<%= exercise.xp %>
+                              XP</span>
+                          <% } %>
+                            <% } %>
+            </div>
+          </div>
+          <% if(isSprint){ %>
+            <div class="progress thin-progress mt-1 mb-3" role="progressbar" aria-label="Questions du sprint terminées"
+              aria-valuenow="<%= run.done %>" aria-valuemin="0" aria-valuemax="<%= run.total %>">
+              <div class="progress-bar progress-primary" style="width:<%= run.done/run.total*100 %>%"></div>
+            </div>
+            <% } %>
+              <h1 id="mission-title" class="mission-title">
+                <%= isExam?'À toi de prendre le tableau.':exercise.title %>
+              </h1>
+              <p class="mission-statement" id="statement"><%- statementHtml(exercise.statement, tables) %></p>
+              <div class="mission-foot">
+                <% if(isPlayground){ %>
+                  <form method="get" action="/playground" class="playground-switch">
+                    <label for="dataset" class="label-text">Jeu de données</label>
+                    <select name="dataset" id="dataset" class="hidden" data-select='<%- advancedSelect({placeholder:'Choisir une base', search:true, searchPlaceholder:'Filtrer les bases…'}) %>'>
+                      <% for(const d of datasets){ %>
+                        <option value="<%= d.id %>" <%=exercise.id===d.id?'selected':'' %>><%= d.name %>
+                        </option>
+                        <% } %>
+                    </select>
+                    <button class="btn btn-outline btn-sm">Explorer cette base</button>
+                  </form>
+                  <% } else { %>
+                    <p class="mission-meta">
+                      <span><span class="material-symbols-rounded" aria-hidden="true">table</span>
+                        <%= tables[openIndex].name %>
+                      </span>
+                      <span><span class="material-symbols-rounded" aria-hidden="true">category</span>
+                        <%= exercise.category %>
+                      </span>
+                      <% if(isExam){ %><span>Résultat et correction après « J’ai terminé ».</span>
+                        <% } %>
+                    </p>
+                    <% } %>
+                      <% if(isTraining){ %>
+                        <div class="mission-recall">
+                          <button type="button" class="collapse-toggle recall-toggle" data-collapse="#notion-recall"
+                            aria-controls="notion-recall" aria-expanded="false"><span class="material-symbols-rounded"
+                              aria-hidden="true">lightbulb</span>Le petit rappel<span
+                              class="material-symbols-rounded recall-chevron"
+                              aria-hidden="true">expand_more</span></button>
+                        </div>
+                        <% } %>
+                          <% if(isExam){ %><button type="button" id="hide-schema" class="btn btn-outline btn-sm"
+                              aria-controls="database-panel" aria-expanded="true"><span class="material-symbols-rounded"
+                                aria-hidden="true">visibility_off</span>Masquer la base</button>
+                            <% } %>
+              </div>
+              <% if(isTraining){ %>
+                <p id="notion-recall" class="collapse hidden recall-text">
+                  <%= exercise.notion %>
+                </p>
+                <% } %>
+        </section>
+
+        <div class="workspace-grid">
+          <div class="ws-side">
+            <%- include('partials/database',{tables,exercise,openIndex}) %>
+          </div>
+          <div class="ws-resizer" id="ws-resizer" role="separator" tabindex="0" aria-orientation="vertical"
+            aria-label="Largeur du panneau Base disponible" aria-valuemin="470" aria-valuemax="900" aria-valuenow="0">
+            <span aria-hidden="true"></span></div>
+          <div class="ws-main">
+            <section class="card editor-panel">
+              <div class="editor-bar">
+                <label for="sql-query" class="editor-file"><span class="material-symbols-rounded text-primary"
+                    aria-hidden="true">terminal</span>
+                  <%= isExam?'ta-reponse.sql':'requete.sql' %>
+                </label>
+                <span class="editor-shortcut">
+                  <% if(isExam||isSprint){ %>Une seule validation<% } else { %><kbd class="kbd kbd-xs">Ctrl</kbd><kbd
+                        class="kbd kbd-xs">Entrée</kbd>
+                      <% } %>
+                </span>
+              </div>
+              <textarea class="textarea sql-editor" id="sql-query" aria-describedby="editor-help" spellcheck="false"
+                autocomplete="off" autocorrect="off" autocapitalize="off" maxlength="12000"
+                placeholder="<%= isExam||isSprint?'Écris ici, comme au tableau…':'-- Ta prochaine requête commence ici…' %>"></textarea>
+              <div class="editor-actions">
+                <div class="editor-actions-main">
+                  <button type="button" id="run-query" class="btn btn-primary"><span class="material-symbols-rounded"
+                      aria-hidden="true">
+                      <%= isExam||isSprint?'check':'play_arrow' %>
+                    </span><span>
+                      <%= isExam?'J’ai terminé':isSprint?'Valider ma réponse':'Exécuter' %>
+                    </span></button>
+                  <button type="button" id="reset-query" class="btn btn-text btn-sm"
+                    aria-label="Effacer ma requête"><span class="material-symbols-rounded"
+                      aria-hidden="true">restart_alt</span>Réinitialiser</button>
+                </div>
+                <% if(isTraining){ %>
+                  <div class="editor-actions-help">
+                    <button type="button" class="btn btn-outline btn-sm" id="hint-button"><span
+                        class="material-symbols-rounded" aria-hidden="true">lightbulb</span>Indice <span
+                        id="hint-count">
+                        <%= progress?.hints_used||0 %>
+                      </span>/3</button>
+                    <button type="button" class="btn btn-text btn-sm solution-link" data-overlay="#solution-modal"
+                      aria-label="Afficher la solution">Solution</button>
+                  </div>
+                  <% } %>
+              </div>
+            </section>
+            <p class="editor-help" id="editor-help">
+              <%= isExam||isSprint?'Rien n’est exécuté pendant la saisie.':'Chaque exécution repart des données initiales. Une seule instruction à la fois.' %>
+                <% if(isTraining){ %> L’XP est attribuée à la première réussite ; les indices la réduisent.<% } %>
+            </p>
+
+            <% if(isTraining){ %>
+              <section id="hints-panel"
+                class="alert alert-soft alert-info hints-panel <%= progress?.hints_used?'':'hidden' %>"
+                aria-live="polite">
+                <div>
+                  <h2 class="text-sm mb-2">Un coup de pouce</h2>
+                  <ol id="hints-list" class="list-decimal pl-5 space-y-1 text-sm">
+                    <% for(const hint of exercise.hints.slice(0,progress?.hints_used||0)){ %>
+                      <li>
+                        <%= hint %>
+                      </li>
+                      <% } %>
+                  </ol>
+                </div>
+              </section>
+              <% } %>
+
+                <section id="result-panel" class="card result-panel" aria-live="polite" aria-atomic="false">
+                  <p class="result-placeholder"><span class="material-symbols-rounded"
+                      aria-hidden="true">terminal</span>
+                    <%= isExam||isSprint?'Le résultat s’affichera après ta validation.':'Exécute ta requête pour voir le résultat.' %>
+                  </p>
+                </section>
+
+                <section id="correction-panel" class="card correction-panel hidden">
+                  <h2 class="correction-title"><span class="material-symbols-rounded text-primary"
+                      aria-hidden="true">school</span>Une correction possible</h2>
+                  <pre id="solution-sql" class="correction-sql"></pre>
+                  <p id="solution-explanation" class="correction-text"></p>
+                </section>
+          </div>
+        </div>
+
+        <div id="sticky-actions" class="sticky-actions" hidden>
+          <span class="sticky-status" id="sticky-status"></span>
+          <a class="btn btn-primary btn-sm sticky-next" id="sticky-next" href="<%= nextUrl||'/training' %>">Suivant<span
+              class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+        </div>
+
+        <% if(isTraining){ %>
+          <div id="solution-modal" class="overlay modal overlay-open:opacity-100 hidden" role="dialog" tabindex="-1"
+            aria-labelledby="solution-modal-title">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h2 id="solution-modal-title" class="modal-title">Afficher la solution ?</h2><button type="button"
+                    class="btn btn-text btn-circle btn-sm absolute end-3 top-3" aria-label="Fermer"
+                    data-overlay="#solution-modal"><span class="material-symbols-rounded"
+                      aria-hidden="true">close</span></button>
+                </div>
+                <div class="modal-body">Cela comptera comme une aide : cet exercice ne rapportera plus d’XP.<p
+                    class="muted mt-3 text-sm">Tu peux aussi fermer cette fenêtre et demander un indice.</p>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-outline"
+                    data-overlay="#solution-modal">Je cherche encore</button><button type="button"
+                    class="btn btn-primary" id="confirm-solution" disabled>Oui, afficher la solution</button></div>
+              </div>
+            </div>
+          </div>
+          <% } %>
+      </div>
+      <script src="/js/sql-table.js" defer></script>
+      <script src="/js/exercise.js" defer></script>
+      <%- include('partials/end') %>

@@ -1,0 +1,75 @@
+<%- include('partials/start') %>
+<div class="training-head">
+  <div>
+    <p class="eyebrow mb-2">Le terrain de pratique</p>
+    <h1>L’atelier SQL</h1>
+    <p class="muted mt-2">Choisis une notion. Écris, teste, comprends. Recommence.</p>
+  </div>
+  <a href="/training/random" class="btn btn-primary"><span class="material-symbols-rounded" aria-hidden="true">shuffle</span>Question aléatoire</a>
+</div>
+<form class="card border border-base-300 shadow-none filter-bar" method="get">
+  <div class="filter-field">
+    <label for="q" class="label-text">Rechercher une notion ou un contexte</label>
+    <input id="q" name="q" class="input" placeholder="Ex. JOIN, cinéma, NULL…" value="<%= search %>">
+  </div>
+  <div class="filter-field">
+    <label for="level" class="label-text">Niveau</label>
+    <select name="level" id="level" class="hidden" data-select='<%- advancedSelect({placeholder:"Tous les niveaux"}) %>'>
+      <option value="0">Tous les niveaux</option>
+      <% for(const l of levels){ %><option value="<%= l.id %>" <%= level===l.id?'selected':'' %>><%= l.id %> · <%= l.name %></option><% } %>
+    </select>
+  </div>
+  <div class="filter-field">
+    <label for="status" class="label-text">Progression</label>
+    <select name="status" id="status" class="hidden" data-select='<%- advancedSelect({placeholder:"Tout afficher"}) %>'>
+      <option value="">Tous les exercices</option>
+      <option value="todo" <%= status==='todo'?'selected':'' %>>À pratiquer</option>
+      <option value="done" <%= status==='done'?'selected':'' %>>Déjà réussis</option>
+    </select>
+  </div>
+  <button class="btn btn-primary filter-submit"><span class="material-symbols-rounded" aria-hidden="true">filter_alt</span>Filtrer</button>
+</form>
+<div class="catalog-meta">
+  <span><strong><%= count %></strong> exercice<%= count>1?'s':'' %> correspond<%= count>1?'ent':'' %> à ta recherche</span>
+  <span><strong><%= stats.solved.size %></strong> / <%= totalExercises %> réussis</span>
+</div>
+<div class="catalog-grid">
+  <% for(const e of items){ const solved=stats.solved.has(e.id); %>
+  <a href="/training/<%= e.id %>" class="card exercise-card <%= solved?'is-solved':'' %>">
+    <div class="exercise-top">
+      <span class="badge badge-meta badge-sm">Niveau <%= e.level %></span>
+      <% if(solved){ %><span class="badge badge-soft badge-success badge-sm exercise-state"><span class="material-symbols-rounded" aria-hidden="true">check</span>Réussi</span>
+      <% } else { %><span class="exercise-xp">+<%= e.xp %> XP</span><% } %>
+    </div>
+    <h3 class="exercise-title"><%= e.title %></h3>
+    <p class="exercise-meta"><%= e.tags[1] %> · <%= e.difficulty %></p>
+    <div class="exercise-foot">
+      <span class="exercise-notion"><%= e.tags[0] %></span>
+      <span class="material-symbols-rounded exercise-arrow" aria-hidden="true">arrow_forward</span>
+    </div>
+  </a>
+  <% } %>
+</div>
+<% if(!items.length){ %>
+<div class="empty-state card">Aucun exercice pour ces filtres. <a href="/training" class="link link-primary">Afficher tout le parcours</a></div>
+<% } %>
+<%
+  /* Pagination compacte : première page, voisines de la page courante, dernière page. */
+  const link = p => '/training?' + new URLSearchParams({level:String(level), q:search, status, page:String(p)}).toString();
+  const window = new Set([1, pages, page, page-1, page+1, page-2, page+2].filter(p => p >= 1 && p <= pages));
+  const numbers = [...window].sort((a,b) => a-b);
+%>
+<% if(pages>1){ %>
+<nav class="pagination" aria-label="Pagination des exercices">
+  <p class="pagination-info"><%= (page-1)*perPage+1 %>–<%= Math.min(page*perPage, count) %> sur <%= count %> exercice<%= count>1?'s':'' %></p>
+  <div class="pagination-pages">
+    <a class="btn btn-outline btn-sm <%= page===1?'btn-disabled':'' %>" href="<%= link(Math.max(1,page-1)) %>" <%- page===1?'aria-disabled="true" tabindex="-1"':'' %>><span class="material-symbols-rounded" aria-hidden="true">chevron_left</span><span class="hidden sm:inline">Précédent</span></a>
+    <% let previous=0; for(const number of numbers){ %>
+      <% if(number-previous>1){ %><span class="pagination-gap" aria-hidden="true">…</span><% } %>
+      <a href="<%= link(number) %>" class="btn btn-square btn-sm <%= page===number?'btn-primary':'btn-text' %>" <%- page===number?'aria-current="page"':'' %> aria-label="Page <%= number %>"><%= number %></a>
+      <% previous=number; } %>
+    <a class="btn btn-outline btn-sm <%= page===pages?'btn-disabled':'' %>" href="<%= link(Math.min(pages,page+1)) %>" <%- page===pages?'aria-disabled="true" tabindex="-1"':'' %>><span class="hidden sm:inline">Suivant</span><span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></a>
+  </div>
+</nav>
+<% } %>
+<%- include('partials/end') %>

@@ -1,0 +1,178 @@
+<%- include('partials/start') %>
+  <div class="flex justify-between items-end gap-4 mb-6">
+    <div>
+      <p class="eyebrow mb-2">On reprend les bonnes habitudes</p>
+      <h1>Bonjour <%= user.pseudo %> <span class="font-normal" aria-hidden="true">☀</span></h1>
+      <p class="muted mt-2">Prêt pour une nouvelle requête ? Chaque essai te fait progresser.</p>
+    </div><span class="badge badge-outline hidden sm:inline-flex font-mono text-xs">PARCOURS DWWM</span>
+  </div>
+  <section class="hero">
+    <div>
+      <p class="eyebrow mb-4">Ton prochain petit déclic</p>
+      <h2>La confiance s’écrit<br>une requête à la fois.</h2>
+      <p class="text-green-100/80 mt-3 mb-6 max-w-md">10 minutes de pratique aujourd’hui.<br>Un peu plus de sérénité
+        devant le jury demain.</p><a class="btn" href="/training/<%= next.id %>">Continuer l’entraînement <span
+          class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+      <p class="text-xs text-green-100/70 mt-3">Niveau <%= next.level %> · <%= next.category %>
+      </p>
+    </div>
+    <div class="hero-terminal" aria-hidden="true">
+      <div class="flex justify-between text-xs text-green-100/60">
+        <div class="terminal-dots"><i></i><i></i><i></i></div><span>confiance.sql</span>
+      </div>
+      <div><span class="code-key">SELECT</span> nouvelles_competences<br><span class="code-key">FROM</span>
+        chaque_tentative<br><span class="code-key">WHERE</span> abandon = <span class="code-string">false</span>;</div>
+      <div class="border-t border-green-100/15 mt-5 pt-4 text-xs text-green-200">✓ Tu progresses déjà.</div>
+    </div>
+  </section>
+  <div class="metric-grid">
+    <% for(const [label,value,desc,icon] of [['Expérience gagnée',user.xp+' XP','Niveau '+user.level+'· '+(150-user.xp%150)+' XP avant le suivant','bolt'],['Exercices réussis',user.solved_count,'sur '+totalExercises+' défis à explorer','task_alt'],['Taux de réussite',stats.accuracy+' %',stats.totals.attempts+' tentatives au total','target'],['Série actuelle',user.current_streak,'Record personnel : '+user.best_streak,' local_fire_department']]){ %>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-figure text-primary"><span class="material-symbols-rounded" aria-hidden="true">
+              <%= icon %>
+            </span></div>
+          <div class="stat-title muted">
+            <%= label %>
+          </div>
+          <div class="stat-value mt-2">
+            <%= value %>
+          </div>
+          <div class="stat-desc muted">
+            <%= desc %>
+          </div>
+        </div>
+      </div>
+      <% } %>
+  </div>
+  <div class="grid xl:grid-cols-[1fr_300px] gap-6">
+    <section>
+      <div class="section-heading !mt-2">
+        <h2>Ton parcours SQL</h2><a href="/training" class="link link-primary text-xs font-bold">Voir les exercices
+          <span aria-hidden="true">↗</span></a>
+      </div>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <% for(const c of stats.categories){ %><a href="/training?level=<%= c.id %>" class="card level-card">
+            <div class="card-body">
+              <div class="flex items-center justify-between"><span class="icon-tile"><span
+                    class="material-symbols-rounded" aria-hidden="true">
+                    <%= c.icon %>
+                  </span></span><span class="level-code muted">NIVEAU 0<%= c.id %></span></div>
+              <div>
+                <h3>
+                  <%= c.name %>
+                </h3>
+                <p class="text-xs muted mt-1 font-mono">
+                  <%= c.concepts %>
+                </p>
+              </div>
+              <div class="mt-2">
+                <div class="progress-track"><span class="muted">
+                    <%= c.done %> / <%= c.total %> exercices
+                  </span><span class="font-bold text-primary">
+                    <%= c.percent %> %
+                  </span></div>
+                <div class="progress thin-progress" role="progressbar" aria-label="Progression <%= c.name %>"
+                  aria-valuenow="<%= c.percent %>" aria-valuemin="0" aria-valuemax="100">
+                  <div class="progress-bar progress-primary" style="width:<%= c.percent %>%"></div>
+                </div>
+              </div>
+            </div>
+          </a>
+          <% } %>
+      </div>
+    </section>
+    <aside>
+      <div class="section-heading !mt-2">
+        <h2>Change de rythme</h2>
+      </div>
+      <div class="card border border-base-300 shadow-none overflow-hidden">
+        <% for(const [url,icon,tone,title,desc] of [['/exam','school','','Face au jury','Une question. À toi de jouer.'],['/sprint','bolt','!text-warning !bg-warning/10','Sprint SQL','5, 10 ou 20 questions chrono.'],['/training/random','shuffle','!text-info !bg-info/10','Surprends-moi','Une question aléatoire.']]){
+          %><a href="<%= url %>" class="feature-link"><span class="icon-tile <%= tone %>"><span
+                class="material-symbols-rounded" aria-hidden="true">
+                <%= icon %>
+              </span></span><span class="feature-text"><span class="feature-title">
+                <%= title %>
+              </span><span class="feature-desc">
+                <%= desc %>
+              </span></span><span class="material-symbols-rounded feature-arrow"
+              aria-hidden="true">north_east</span></a>
+          <% } %>
+      </div>
+      <div class="card border border-base-300 shadow-none !mt-2">
+        <div class="card-body">
+          <div class="flex justify-between items-center">
+            <h3>Vue d’ensemble</h3><span class="badge badge-soft badge-primary">
+              <%= stats.percent %> %
+            </span>
+          </div>
+          <div class="progress thin-progress my-3" role="progressbar" aria-label="Progression générale"
+            aria-valuenow="<%= stats.percent %>" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar progress-primary" style="width:<%= stats.percent %>%"></div>
+          </div>
+          <p class="text-xs muted">Tous les niveaux sont ouverts. Avance à ton rythme ou cible une notion.</p><a
+            href="/review" class="btn btn-outline btn-sm mt-3">Revoir mes erreurs <span class="material-symbols-rounded"
+              aria-hidden="true">history</span></a>
+        </div>
+      </div>
+      <div class="mt-6">
+        <h3 class="mb-3">Tes premiers trophées</h3>
+        <div class="flex flex-wrap gap-2">
+          <% for(const b of stats.badges.slice(0,4)){ %><span
+              class="badge badge-soft <%= b.earned_at?'badge-primary':'badge-neutral badge-locked' %> gap-1 py-3"
+              title="<%= b.earned_at?'Débloqué':'À débloquer' %>"><span class="material-symbols-rounded text-sm"
+                aria-hidden="true">
+                <%= b.icon %>
+              </span>
+              <%= b.name %>
+            </span>
+            <% } %>
+        </div>
+      </div>
+    </aside>
+  </div>
+  <section>
+    <div class="section-heading">
+      <h2>Dernières tentatives</h2><a href="/review" class="link link-primary text-xs font-bold">Comprendre mes erreurs
+        ↗</a>
+    </div>
+    <div class="card border border-base-300 shadow-none overflow-hidden">
+      <% if(!recent.length){ %>
+        <div class="empty-state"><span class="material-symbols-rounded text-primary mb-2"
+            aria-hidden="true">terminal</span>
+          <p>Ton histoire SQL commence avec une première requête.</p><a class="link link-primary font-bold text-sm"
+            href="/training/<%= next.id %>">Lancer mon premier exercice</a>
+        </div>
+        <% } else { %>
+          <div class="overflow-x-auto">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Exercice</th>
+                  <th>Notion</th>
+                  <th>Résultat</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <% for(const a of recent){ %>
+                  <tr>
+                    <td class="font-semibold">
+                      <%= a.title %>
+                    </td>
+                    <td class="text-xs muted">
+                      <%= a.category %>
+                    </td>
+                    <td><span class="badge badge-soft <%= a.success?'badge-success':'badge-warning' %>">
+                        <%= a.success?'Réussi':'À revoir' %>
+                      </span></td>
+                    <td><a class="btn btn-text btn-sm" href="/training/<%= a.exercise_id %>">Reprendre</a></td>
+                  </tr>
+                  <% } %>
+              </tbody>
+            </table>
+          </div>
+          <% } %>
+    </div>
+  </section>
+  <%- include('partials/end') %>

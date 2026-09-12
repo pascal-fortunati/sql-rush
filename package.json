@@ -1,0 +1,48 @@
+{
+  "name": "sql-rush-dwwm",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Entraînement SQL en français pour le DWWM",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "setup": "node scripts/setup.js && npm run build && npm run validate",
+    "build": "node scripts/assets.js && tailwindcss -i src/styles/app.css -o public/css/app.css --minify",
+    "dev": "concurrently -k -n css,web \"tailwindcss -i src/styles/app.css -o public/css/app.css --watch\" \"node --watch --env-file-if-exists=.env src/server.js\"",
+    "start": "node --env-file-if-exists=.env src/server.js",
+    "validate": "node scripts/validate-exercises.js",
+    "test": "node --test --test-concurrency=1 tests/*.test.js",
+    "test:browser": "playwright test"
+  },
+  "dependencies": {
+    "@fontsource-variable/manrope": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "bcrypt": "^6.0.0",
+    "better-sqlite3": "^13.0.3",
+    "datatables.net": "^3.0.4",
+    "dotenv": "^17.4.2",
+    "ejs": "^6.0.1",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
+    "express-session": "^1.19.0",
+    "flyonui": "^2.4.1",
+    "helmet": "^8.3.0",
+    "jquery": "^4.0.0",
+    "material-symbols": "^0.47.2"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.63.0",
+    "@tailwindcss/cli": "^4.3.3",
+    "concurrently": "^10.0.5",
+    "supertest": "^7.2.2",
+    "tailwindcss": "^4.3.3"
+  },
+  "allowScripts": {
+    "better-sqlite3@13.0.3": true,
+    "bcrypt@6.0.0": true,
+    "@parcel/watcher@2.5.1": true
+  }
+}

@@ -1,0 +1,55 @@
+<%- include('partials/start') %>
+<p class="eyebrow mb-2">On progresse ensemble</p>
+<h1>Le classement de la promotion</h1>
+<p class="muted mt-3 mb-7">Un peu d’émulation, beaucoup de pratique. Seules les premières réussites rapportent de l’XP.</p>
+<div class="card border border-base-300 shadow-none app-datatable" data-datatable='{"pageLength":10,"pagingOptions":{"pageBtnClasses":"btn btn-text btn-square btn-sm"},"language":{"zeroRecords":"<div class=\"datatable-empty\">Aucun étudiant ne correspond à cette recherche.</div>"}}'>
+  <div class="datatable-toolbar">
+    <div class="datatable-search-wrap">
+      <span class="material-symbols-rounded datatable-search-icon" aria-hidden="true">search</span>
+      <label for="leaderboard-search" class="sr-only">Rechercher un étudiant</label>
+      <input type="search" id="leaderboard-search" class="input datatable-search" placeholder="Rechercher un pseudo…" data-datatable-search>
+    </div>
+    <div class="datatable-length">
+      <label for="leaderboard-length" class="label-text">Lignes</label>
+      <select id="leaderboard-length" class="hidden" data-datatable-page-entities data-select='<%- advancedSelect({placeholder:"10"}) %>'>
+        <option value="10">10 lignes</option>
+        <option value="25">25 lignes</option>
+        <option value="50">50 lignes</option>
+      </select>
+    </div>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="table datatable-table">
+      <caption class="sr-only">Classement par XP, puis exercices réussis. Les en-têtes permettent de trier.</caption>
+      <thead>
+        <tr>
+          <th scope="col" class="!text-start">Position</th>
+          <% for(const [label,hint] of [['Pseudo','le pseudo'],['Niveau','le niveau'],['XP','l’XP'],['Exercices réussis','les exercices réussis'],['Meilleure série','la meilleure série']]){ %>
+          <th scope="col"><span class="datatable-head"><%= label %><span class="material-symbols-rounded datatable-sort" aria-hidden="true">unfold_more</span><span class="material-symbols-rounded datatable-sort-asc" aria-hidden="true">arrow_upward</span><span class="material-symbols-rounded datatable-sort-desc" aria-hidden="true">arrow_downward</span><span class="sr-only">, trier par <%= hint %></span></span></th>
+          <% } %>
+        </tr>
+      </thead>
+      <tbody>
+        <% for(const [i,u] of users.entries()){ %>
+        <tr class="<%= u.id===user.id?'bg-primary/5':'' %>">
+          <td class="font-mono muted">#<%= i+1 %></td>
+          <td class="font-bold"><%= u.pseudo %><% if(u.id===user.id){ %><span class="badge badge-soft badge-primary badge-xs ml-2">Toi</span><% } %></td>
+          <td><span class="badge badge-meta badge-sm">Niveau <%= u.level %></span></td>
+          <td class="font-bold text-primary"><%= u.xp %></td>
+          <td><%= u.solved_count %></td>
+          <td><%= u.best_streak %></td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+  <div class="datatable-footer">
+    <p class="datatable-info">Étudiants <span data-datatable-info><span data-datatable-info-from></span>–<span data-datatable-info-to></span> sur <span data-datatable-info-length></span></span></p>
+    <nav class="datatable-paging" aria-label="Pagination du classement">
+      <button type="button" class="btn btn-text btn-square btn-sm" data-datatable-paging-prev aria-label="Page précédente"><span class="material-symbols-rounded" aria-hidden="true">chevron_left</span></button>
+      <div class="datatable-pages" data-datatable-paging-pages></div>
+      <button type="button" class="btn btn-text btn-square btn-sm" data-datatable-paging-next aria-label="Page suivante"><span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></button>
+    </nav>
+  </div>
+</div>
+<%- include('partials/end') %>

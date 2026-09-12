@@ -1,0 +1,25 @@
+# Dépendances
+node_modules/
+
+# Secrets et bases de données locales (.env.example reste versionné)
+.env
+data/*.db
+data/*.db-shm
+data/*.db-wal
+data/*.sqlite*
+
+# Tests et rapports (les tests restent en local, hors dépôt)
+tests/
+test-results/
+playwright-report/
+coverage/
+
+# Fichiers générés par npm run build / npm run setup
+public/css/app.css
+public/vendor/
+
+# Divers
+*.log
+tmp/
+.vscode/
+.idea/

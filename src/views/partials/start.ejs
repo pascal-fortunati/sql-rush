@@ -1,0 +1,71 @@
+<%- include('head') %>
+  <% if(user && !examLayout) { %>
+    <aside class="app-sidebar" aria-label="Navigation principale">
+      <a class="brand px-3" href="/dashboard"><span class="brand-mark"><span class="material-symbols-rounded"
+            aria-hidden="true">terminal</span></span><span>SQL<span class="text-primary">Rush</span></span><span
+          class="badge badge-soft badge-primary badge-xs ml-auto">DWWM</span></a>
+      <div class="nav-label mt-7">Ton espace de pratique</div>
+      <ul class="menu">
+        <% const nav=[['/dashboard','space_dashboard','Tableau de bord'],['/training','terminal','Entraînement'],['/exam','school','Mode Examen'],['/sprint','bolt','Sprint SQL'],['/review','history','Mes erreurs']]; for(const [url,icon,label] of nav){ %>
+          <li><a href="<%= url %>" class="<%= path.startsWith(url)?'active':'' %>" <%-
+              path.startsWith(url)?'aria-current="page"':'' %>><span class="material-symbols-rounded" aria-hidden="true"><%= icon %></span><%= label %></a></li>
+    <% } %>
+  </ul>
+  <div class="nav-label">Explorer & progresser</div>
+  <ul class="menu">
+    <% for(const [url,icon,label] of [[' /leaderboard','leaderboard','Classement'],['/playground','science','Bac à sable'],['/cheatsheet','menu_book','Aide-mémoire']]){ %>
+          <li><a href="<%= url %>" class="<%= path.startsWith(url)?'active':'' %>" <%-
+              path.startsWith(url)?'aria-current="page"':'' %>><span class="material-symbols-rounded" aria-hidden="true"><%= icon %></span><%= label %></a></li>
+    <% } %>
+  </ul>
+  <%
+    // Progression vers le niveau suivant : 150 XP par niveau, sans calcul supplémentaire côté serveur.
+    const inLevel=user.xp%150; const toNext=150-inLevel;
+  %>
+  <div class="sidebar-note mt-auto"><span class="eyebrow">Une requête à la fois</span><p>Les automatismes viennent en pratiquant. Tu es au bon endroit.</p><a href="/exam" class="link link-primary">Se préparer au tableau <span aria-hidden="true">↗</span></a></div>
+  <div class="sidebar-profile">
+    <div class="profile-top">
+      <span class="profile-initials" aria-hidden="true"><%= user.pseudo.slice(0,2).toUpperCase() %></span>
+      <span class="profile-name"><%= user.pseudo %></span>
+      <form action="/logout" method="post" class="tooltip [--placement:top]">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <button class="tooltip-toggle btn btn-text btn-square btn-sm profile-logout" aria-label="Se déconnecter"><span class="material-symbols-rounded" aria-hidden="true">logout</span></button>
+        <span class="tooltip-content tooltip-shown:opacity-100 tooltip-shown:visible" role="tooltip"><span class="tooltip-body">Se déconnecter</span></span>
+      </form>
+    </div>
+    <p class="profile-meta">Niveau <%= user.level %> · <%= user.xp %> XP</p>
+    <div class="progress thin-progress profile-progress" role="progressbar" aria-label="Progression vers le niveau <%= user.level+1 %>" aria-valuenow="<%= Math.round(inLevel/150*100) %>" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar progress-primary" style="width:<%= Math.round(inLevel/150*100) %>%"></div></div>
+    <p class="profile-next"><%= toNext %> XP avant le niveau <%= user.level+1 %></p>
+  </div>
+</aside>
+<div class="app-main">
+  <header class="navbar app-topbar">
+    <button type="button" class="collapse-toggle btn btn-text btn-square min-[801px]:hidden" data-collapse="#mobile-nav" aria-controls="mobile-nav" aria-expanded="false" aria-label="Ouvrir le menu"><span class="material-symbols-rounded" aria-hidden="true">menu</span></button>
+    <div class="text-xs muted flex items-center gap-2"><span class="material-symbols-rounded text-primary" aria-hidden="true">grid_view</span><span class="hidden sm:inline">Mon espace</span><span aria-hidden="true">/</span><span class="font-semibold text-base-content"><%= title %></span></div>
+    <div class="ml-auto flex items-center gap-4"><span class="badge badge-soft badge-warning gap-1"><span class="material-symbols-rounded text-sm" aria-hidden="true">local_fire_department</span><%= user.current_streak %><span class="hidden sm:inline"> de série</span></span><%- include('theme') %></div>
+              </header>
+              <nav id="mobile-nav" class="collapse hidden min-[801px]:hidden bg-base-100 border-b border-base-300 p-3"
+                aria-label="Navigation mobile">
+                <ul class="menu w-full">
+                  <% for(const [url,label] of [['/dashboard','Tableau de bord'],['/training','Entraînement'],['/exam','Mode Examen'],['/sprint','Sprint SQL'],['/review','Mes erreurs'],['/leaderboard','Classement'],['/playground','Bac à sable'],['/cheatsheet','Aide-mémoire']]){ %>
+                    <li><a href="<%= url %>">
+                        <%= label %>
+                      </a></li>
+                    <% } %>
+                </ul>
+                <form action="/logout" method="post"><input type="hidden" name="_csrf" value="<%= csrf %>"><button
+                    class="btn btn-text w-full">Se déconnecter</button></form>
+              </nav>
+              <main id="main" class="app-content <%= locals.wide?'workspace-container':'' %>">
+                <% } else { %>
+                  <div class="<%= examLayout?'exam-page':'' %>">
+                    <% if(examLayout){ %>
+                      <header class="flex items-center justify-between gap-4 mb-6 exam-header"><a class="brand"
+                          href="/dashboard"><span class="brand-mark"><span class="material-symbols-rounded"
+                              aria-hidden="true">terminal</span></span>SQL Rush</a>
+                        <div class="flex gap-4 items-center"><%- include('theme') %><a href="/exam"
+                              class="btn btn-outline btn-sm">Quitter la question</a></div>
+                      </header>
+                      <% } %>
+                        <main id="main">
+                          <% } %>

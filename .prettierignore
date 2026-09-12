@@ -1,0 +1,5 @@
+# Les vues EJS mêlent HTML et JavaScript : un reformatage automatique coupe les chaînes
+# des blocs <% %> et casse le rendu. Elles se modifient à la main.
+*.ejs
+public/vendor/
+public/css/app.css

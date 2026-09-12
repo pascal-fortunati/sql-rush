@@ -1,0 +1,81 @@
+<%- include('partials/start') %>
+    <div class="flex flex-wrap gap-4 justify-between items-end mb-6">
+        <div>
+            <p class="eyebrow mb-2">Une erreur est un point de départ</p>
+            <h1>Mes erreurs, mes progrès</h1>
+            <p class="muted mt-2">Repère ce qui résiste, puis transforme-le en automatisme.</p>
+        </div><a class="btn btn-primary" href="/training/random?weak=1"><span class="material-symbols-rounded"
+                aria-hidden="true">target</span>Travailler mes difficultés</a>
+    </div>
+    <div class="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <% for(const c of stats.categories){ %>
+            <div class="card border border-base-300 shadow-none">
+                <div class="card-body">
+                    <h2 class="text-sm">
+                        <%= c.name %>
+                    </h2>
+                    <div class="flex justify-between text-xs mt-3"><span class="muted">
+                            <%= c.attempts %> tentatives
+                        </span><strong>
+                            <%= c.accuracy===null?'Pas encore essayé':c.accuracy+' % justes' %>
+                        </strong></div>
+                    <div class="progress thin-progress mt-2" role="progressbar" aria-label="Réussite <%= c.name %>"
+                        aria-valuenow="<%= c.accuracy||0 %>" aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-bar progress-primary" style="width:<%= c.accuracy||0 %>%"></div>
+                    </div><a href="/training?level=<%= c.id %>" class="link link-primary text-xs mt-3">Pratiquer cette
+                        notion ↗</a>
+                </div>
+            </div>
+            <% } %>
+    </div>
+    <div class="section-heading">
+        <h2>Les 30 dernières erreurs</h2><span class="text-xs muted">Même les erreurs SQL comptent pour
+            apprendre.</span>
+    </div>
+    <% if(!errors.length){ %>
+        <div class="card empty-state border border-base-300"><span class="material-symbols-rounded text-primary mb-2"
+                aria-hidden="true">spa</span>
+            <p>Aucune erreur enregistrée pour le moment.</p><a href="/training" class="link link-primary mt-2">Aller
+                pratiquer</a>
+        </div>
+        <% } %>
+            <div class="space-y-3">
+                <% for(const a of errors){ %>
+                    <article class="card border border-base-300 shadow-none">
+                        <div class="card-body">
+                            <div class="flex flex-wrap justify-between gap-3">
+                                <div>
+                                    <h3>
+                                        <%= a.title %>
+                                    </h3>
+                                    <p class="text-xs muted mt-1">
+                                        <%= a.category %> · <%= new
+                                                Date(a.created_at+'Z').toLocaleString('fr-FR',{timeZone:'Europe/Paris'})
+                                                %>
+                                    </p>
+                                </div>
+                                <div class="flex items-center gap-3"><span
+                                        class="badge badge-soft <%= a.solved?'badge-success':'badge-warning' %>">
+                                        <%= a.solved?'Réussi depuis':'À retravailler' %>
+                                    </span><a class="btn btn-outline btn-sm"
+                                        href="/training/<%= a.exercise_id %>">Réessayer</a></div>
+                            </div>
+                            <pre class="query-history bg-base-200 rounded-lg p-3 mt-3"><%= a.query %></pre>
+                        </div>
+                    </article>
+                    <% } %>
+            </div>
+            <h2 class="mt-8 mb-4">Ta collection de badges</h2>
+            <div class="flex flex-wrap gap-3">
+                <% for(const b of stats.badges){ %><span
+                        class="badge badge-soft <%= b.earned_at?'badge-primary':'badge-neutral badge-locked' %> gap-2 p-4"><span
+                            class="material-symbols-rounded" aria-hidden="true">
+                            <%= b.icon %>
+                        </span>
+                        <%= b.name %><span class="sr-only">
+                                <%= b.earned_at?'débloqué':'à débloquer' %>
+                            </span>
+                    </span>
+                    <% } %>
+            </div>
+            <%- include('partials/end') %>

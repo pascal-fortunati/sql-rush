@@ -1,0 +1,44 @@
+<%- include('partials/start') %>
+    <p class="eyebrow mb-2">Le mémo qui va à l’essentiel</p>
+    <h1>Un doute sur une clause ?</h1>
+    <p class="muted mt-3 mb-6">Un rappel, un exemple, puis retour à la pratique. Syntaxe SQLite.</p>
+    <div class="alert alert-soft alert-info mb-6">
+        <div><strong>L’ordre d’écriture d’un SELECT</strong>
+            <p class="font-mono text-xs mt-2">SELECT → FROM → JOIN … ON → WHERE → GROUP BY → HAVING → ORDER BY → LIMIT →
+                OFFSET</p>
+        </div>
+    </div>
+    <div class="accordion divide-y divide-base-300 card border border-base-300 shadow-none">
+        <% for(const group of examples){ %>
+            <section class="accordion-item <%= group.id===1?'active':'' %>" id="memo-<%= group.id %>"><button
+                    type="button"
+                    class="accordion-toggle inline-flex w-full items-center justify-between p-5 font-bold text-start"
+                    aria-controls="memo-content-<%= group.id %>"
+                    aria-expanded="<%= group.id===1?'true':'false' %>"><span><span
+                            class="text-primary font-mono mr-3 text-xs">0<%= group.id %></span>
+                        <%= group.name %>
+                    </span><span class="material-symbols-rounded accordion-item-active:rotate-180"
+                        aria-hidden="true">expand_more</span></button>
+                <div id="memo-content-<%= group.id %>"
+                    class="accordion-content <%= group.id===1?'':'hidden' %> w-full overflow-hidden transition-[height] duration-300"
+                    role="region" aria-labelledby="memo-<%= group.id %>">
+                    <div class="p-5 pt-0 grid lg:grid-cols-2 gap-5">
+                        <% for(const e of group.examples){ %>
+                            <article class="bg-base-200 rounded-xl p-4">
+                                <h3 class="text-primary text-sm">
+                                    <%= e.tags[0] %>
+                                </h3>
+                                <p class="text-xs leading-6 muted mt-2">
+                                    <%= e.notion %>
+                                </p>
+                                <pre class="text-xs mt-3 leading-6"><%= e.solutionSql %></pre><a
+                                    href="/training/<%= e.id %>"
+                                    class="link link-primary text-xs inline-block mt-3">M’entraîner ↗</a>
+                            </article>
+                            <% } %>
+                    </div>
+                </div>
+            </section>
+            <% } %>
+    </div>
+    <%- include('partials/end') %>

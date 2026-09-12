@@ -1,0 +1,37 @@
+<%
+  /* Rendu unique d'une table SQL, côté serveur. Le pendant navigateur (public/js/sql-table.js)
+     produit exactement le même balisage : une seule feuille de style .sql-table pour les deux. */
+  const cells=locals.columns.map(c=>typeof c==='string'?{name:c}:c);
+%>
+  <div class="sql-table-wrap" <% if(locals.tall){ %> data-tall="true"<% } %>>
+      <table class="table table-sm sql-table">
+        <caption class="sr-only">
+          <%= locals.caption || 'Table SQL' %>
+        </caption>
+        <thead>
+          <tr>
+            <% for(const c of cells){ %>
+              <th scope="col"><span class="sql-col">
+                  <%= c.name %>
+                </span>
+                <% if(c.pk){ %><span class="material-symbols-rounded sql-key" title="Clé primaire"
+                    aria-label="clé primaire">key</span>
+                  <% } %>
+                    <% if(c.type){ %><span class="sql-type">
+                        <%= c.type %>
+                      </span>
+                      <% } %>
+              </th>
+              <% } %>
+          </tr>
+        </thead>
+        <tbody>
+          <% for(const row of locals.rows){ %>
+            <tr>
+              <% for(const value of row){ %>
+                <td<%= typeof value==='number' ?' class="sql-num"':'' %>><% if(value===null){ %><span class="null-badge">NULL</span><% } else { %><%= value %><% } %></td><% } %></tr>
+      <% } %>
+    </tbody>
+  </table>
+  <% if(!locals.rows.length){ %><p class="sql-empty">Aucune ligne. Les colonnes demandées restent affichées.</p><% } %>
+</div>

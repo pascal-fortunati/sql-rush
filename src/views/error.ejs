@@ -1,0 +1,11 @@
+<%- include('partials/start') %>
+    <div class="max-w-lg mx-auto py-20 text-center"><span class="material-symbols-rounded text-primary !text-5xl mb-5"
+            aria-hidden="true">explore_off</span>
+        <h1>
+            <%= title %>
+        </h1>
+        <p class="muted mt-4 mb-6">
+            <%= message %>
+        </p><a class="btn btn-primary" href="<%= user?'/dashboard':'/login' %>">Revenir à mon espace</a>
+    </div>
+    <%- include('partials/end') %>

@@ -1,0 +1,71 @@
+<%- include('partials/start') %>
+  <div class="auth-layout">
+    <section class="auth-story" aria-label="Bienvenue dans SQL Rush">
+      <a class="brand" href="/"><span class="brand-mark bg-white/10"><span class="material-symbols-rounded"
+            aria-hidden="true">terminal</span></span>SQL Rush <span
+          class="badge badge-outline text-green-200 border-green-200/40 text-xs">DWWM</span></a>
+      <div>
+        <div class="eyebrow !text-green-200 mb-6">Ta prochaine requête change tout.</div>
+        <h1>Moins de stress.<br>Plus de <span>SELECT.</span></h1>
+        <p class="text-green-100/80 text-lg mt-6 max-w-md">Retrouve tes automatismes, comprends tes erreurs et arrive au
+          tableau avec confiance.</p>
+        <div class="hero-terminal !rotate-0 mt-10 max-w-md">
+          <div class="terminal-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div><span class="code-key">SELECT</span> confiance, automatismes<br><span class="code-key">FROM</span>
+            entrainement<br><span class="code-key">WHERE</span> motivation <span class="code-string">&gt; 0</span>;
+          </div>
+          <div class="text-green-200 mt-4 text-xs">↳ À toi d’écrire la suite.</div>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-6 text-xs text-green-100/80"><span>264 exercices</span><span>8
+          niveaux</span><span>À ton rythme</span></div>
+    </section>
+    <section class="auth-form">
+      <form method="post" action="/<%= page %>">
+        <div class="flex justify-between items-center mb-10"><a href="/" class="brand text-lg"><span
+              class="material-symbols-rounded text-primary" aria-hidden="true">terminal</span>SQL Rush</a><%-
+            include('partials/theme') %></div>
+        <p class="eyebrow mb-3">
+          <%= page==='login' ?'Content de te retrouver':'La pratique commence ici' %>
+        </p>
+        <h1 class="text-3xl mb-3">
+          <%= page==='login' ?'Prêt pour une requête ?':'Crée ton espace.' %>
+        </h1>
+        <p class="muted mb-8">
+          <%= page==='login' ?'Connecte-toi pour reprendre ton entraînement.':'Un compte, ta progression, et beaucoup de SQL.' %>
+        </p>
+        <% if(error){ %>
+          <div class="alert alert-soft alert-error mb-5" role="alert">
+            <%= error %>
+          </div>
+          <% } %>
+            <input type="hidden" name="_csrf" value="<%= csrf %>">
+            <% if(page==='register' ){ %>
+              <div class="mb-5"><label class="label-text mb-2 block" for="pseudo">Ton pseudo</label><input id="pseudo"
+                  name="pseudo" class="input" required minlength="2" maxlength="24" autocomplete="nickname"
+                  placeholder="Ex. Pascal" value="<%= values.pseudo||'' %>">
+                <p class="text-xs muted mt-1">Il sera visible dans le classement de la promotion.</p>
+              </div>
+              <% } %>
+                <div class="mb-5"><label class="label-text mb-2 block" for="email">Adresse email</label><input
+                    id="email" name="email" class="input" type="email" required maxlength="254" autocomplete="email"
+                    placeholder="toi@exemple.fr" value="<%= values.email||'' %>"></div>
+                <div class="mb-6"><label class="label-text mb-2 block" for="password">Mot de passe</label><input
+                    id="password" name="password" class="input" type="password" required <%- page==='register'
+                    ?'minlength="10"':'' %> maxlength="72" autocomplete="<%= page==='register'?'new-password':'current-password' %>" placeholder="<%= page==='register' ?'10 caractères minimum':'Ton mot de passe' %>"></div>
+                <button class="btn btn-primary w-full">
+                  <%= page==='login' ?'C’est parti':'Créer mon compte' %><span class="material-symbols-rounded"
+                      aria-hidden="true">arrow_forward</span>
+                </button>
+                <p class="text-sm text-center mt-6 muted">
+                  <%= page==='login' ?'Première visite ?':'Déjà un compte ?' %> <a class="link link-primary font-bold"
+                      href="/<%= page==='login'?'register':'login' %>">
+                      <%= page==='login' ?'Créer mon compte':'Me connecter' %>
+                    </a>
+                </p>
+                <p class="text-xs muted text-center mt-10">Fait pour les étudiants DWWM.<br>Pas besoin d’être expert
+                  pour commencer.</p>
+      </form>
+    </section>
+  </div>
+  <%- include('partials/end') %>

@@ -1,0 +1,71 @@
+<%- include('partials/start') %>
+  <div class="max-w-4xl mx-auto py-6">
+    <p class="eyebrow mb-3">
+      <%= mode==='exam' ?'La répétition avant le grand jour':'Un peu de rythme dans les révisions' %>
+    </p>
+    <h1>
+      <%= mode==='exam' ?'Mode Examen':'Sprint SQL' %>
+    </h1>
+    <p class="text-lg muted mt-3 max-w-2xl">
+      <%= mode==='exam' ?'Une question, un tableau, et ton raisonnement. Entraîne-toi à écrire ta réponse sans filet.':'Enchaîne les questions et repère les notions à revoir. Quelques minutes pour savoir où tu en es.' %>
+    </p>
+    <div class="grid md:grid-cols-[1.1fr_1fr] gap-6 mt-8">
+      <form method="post" action="/<%= mode %>/start" class="card border border-base-300 shadow-none">
+        <div class="card-body p-7">
+          <div class="feature-card-heading"><span class="icon-tile"><span class="material-symbols-rounded"
+                aria-hidden="true">
+                <%= mode==='exam' ?'school':'bolt' %>
+              </span></span>
+            <h2>
+              <%= mode==='exam' ?'Question au tableau':'Compose ton sprint' %>
+            </h2>
+          </div><input type="hidden" name="_csrf" value="<%= csrf %>">
+          <label for="difficulty" class="label-text block mt-5 mb-2">Difficulté</label><select name="difficulty" id="difficulty" class="hidden" data-select='<%- advancedSelect({placeholder:'Toutes les notions'}) %>'>
+            <option value="random">Aléatoire · Toutes les notions</option>
+            <option value="Facile">Facile · Fondamentaux, filtres, tris</option>
+            <option value="Normale">Normale · Agrégations, jointures, modifications</option>
+            <option value="Difficile">Difficile · Structure et requêtes avancées</option>
+          </select>
+          <% if(mode==='sprint' ){ %><label for="count" class="label-text block mt-5 mb-2">Nombre de
+              questions</label><select name="count" id="count" class="hidden" data-select='<%- advancedSelect({placeholder:'10 questions'}) %>'>
+              <option value="5">5 questions · Pour s’échauffer</option>
+              <option value="10" selected>10 questions · Le bon rythme</option>
+              <option value="20">20 questions · Le grand entraînement</option>
+            </select>
+            <% } %>
+              <button class="btn btn-primary w-full mt-7"><span class="material-symbols-rounded" aria-hidden="true">
+                  <%= mode==='exam' ?'casino':'play_arrow' %>
+                </span>
+                <%= mode==='exam' ?'Question du jury':'Lancer mon sprint' %>
+              </button>
+              <p class="text-xs muted mt-3">Les questions sont tirées au sort dans les 264 exercices.</p>
+        </div>
+      </form>
+      <div class="card bg-base-100 border border-base-300 shadow-none">
+        <div class="card-body p-7">
+          <p class="eyebrow mb-4">Comment ça se passe</p>
+          <div class="space-y-6">
+            <% const steps=mode==='exam' ?[['01','Lis la question','Observe les tables, puis masque la base si tu veux simuler un oral.'],['02','Écris ta réponse','Aucun indice, aucune exécution automatique. Un chrono discret, sans limite imposée.'],['03','Dis « J’ai terminé »','Découvre le résultat, une correction et les explications. Puis recommence !']]:[['01','Une question à la fois','Sans indice. Ta première réponse compte pour le score du premier coup.'],['02','Corrige jusqu’à trouver','Une réponse fausse ne fait pas passer à la suite : ajuste ta requête et relance.'],['03','Un bilan pour progresser','Premier coup, questions résolues, tentatives et notions à revoir.']];for(const [n,title,text] of steps){ %>
+              <div class="flex gap-4"><span class="font-mono text-primary text-xs pt-1">
+                  <%= n %>
+                </span>
+                <div>
+                  <h3>
+                    <%= title %>
+                  </h3>
+                  <p class="text-sm muted mt-2">
+                    <%= text %>
+                  </p>
+                </div>
+              </div>
+              <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+    <% if(mode==='exam' ){ %>
+      <p class="text-sm muted mt-6"><span class="material-symbols-rounded text-primary mr-1"
+          aria-hidden="true">groups</span>À deux : un collègue lit la consigne à voix haute et joue le rôle du jury.</p>
+      <% } %>
+  </div>
+  <%- include('partials/end') %>
