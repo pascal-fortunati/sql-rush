@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="150" viewBox="0 0 520 150" role="img" aria-labelledby="title desc">
+  <title id="title">SQLRush</title>
+  <desc id="desc">Logo SQLRush avec une icône de terminal</desc>
+  <rect x="1" y="1" width="518" height="148" rx="28" fill="#10251e" stroke="#19372d" stroke-width="2"/>
+  <rect x="32" y="35" width="80" height="80" rx="20" fill="#0b4a38"/>
+  <rect x="54" y="57" width="36" height="28" rx="3" fill="none" stroke="#b7ff5e" stroke-width="4"/>
+  <path d="M61 66 L69 72 L61 78" fill="none" stroke="#b7ff5e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M73 79 H83" fill="none" stroke="#b7ff5e" stroke-width="4" stroke-linecap="round"/>
+  <text x="138" y="92" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="800" letter-spacing="-2">
+    <tspan fill="#f5f7f6">SQL</tspan><tspan fill="#58e6a6">Rush</tspan>
+  </text>
+  <text x="141" y="116" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" letter-spacing="3.5" fill="#9ab9ac">DWWM · SQL TRAINING</text>
+</svg>
