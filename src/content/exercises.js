@@ -70,15 +70,15 @@ add(6, 'INSERT / NULL', 'Une nouvelle entrée', d => [`Ajoute à ${d.table} : id
 add(6, 'UPDATE', 'Une correction ciblée', d => [`Dans ${d.table}, change uniquement ville en 'Brest' pour la ligne d’id 2.`, `UPDATE ${d.table} SET ville='Brest' WHERE id=2;`], 'UPDATE indique la table, SET les changements, WHERE la ligne ciblée. Sans WHERE, toutes les lignes changeraient.');
 add(6, 'UPDATE / Calcul', 'Une augmentation ciblée', d => [`Dans ${d.table}, augmente ${d.metric} de 2 uniquement pour les lignes situées à Toulon.`, `UPDATE ${d.table} SET ${d.metric}=${d.metric}+2 WHERE ville='Toulon';`], 'SET peut utiliser la valeur actuelle de la colonne dans un calcul.');
 add(6, 'DELETE', 'Supprimer une activité', d => [`Supprime uniquement la ligne d’id 3 de ${d.events}.`, `DELETE FROM ${d.events} WHERE id=3;`], 'DELETE FROM supprime des lignes ; WHERE limite la suppression. La table continue d’exister.');
-add(6, 'DELETE / WHERE', 'Nettoyer les annulations', d => [`Supprime de ${d.events} toutes les lignes de statut annule, et uniquement celles-ci.`, `DELETE FROM ${d.events} WHERE statut='annule';`], 'Vérifie mentalement le filtre avant un DELETE. Sans WHERE, tu viderais toute la table.');
+add(6, 'DELETE / WHERE', 'Nettoyer les annulations', d => [`Supprime de ${d.events} (activités de ${d.table}) toutes les lignes de statut annule, et uniquement celles-ci.`, `DELETE FROM ${d.events} WHERE statut='annule';`], 'Vérifie mentalement le filtre avant un DELETE. Sans WHERE, tu viderais toute la table.');
 
-add(7, 'CREATE TABLE', 'Une table de brouillon', d => [`Crée brouillons avec exactement id INTEGER PRIMARY KEY et contenu TEXT NOT NULL.`, `CREATE TABLE brouillons (id INTEGER PRIMARY KEY, contenu TEXT NOT NULL);`], 'Les définitions des colonnes sont séparées par des virgules entre parenthèses.');
-add(7, 'UNIQUE', 'Une identité unique', d => [`Crée contacts avec id INTEGER PRIMARY KEY, email TEXT NOT NULL UNIQUE et nom TEXT NOT NULL, dans cet ordre.`, `CREATE TABLE contacts (id INTEGER PRIMARY KEY, email TEXT NOT NULL UNIQUE, nom TEXT NOT NULL);`], 'NOT NULL impose une valeur ; UNIQUE interdit deux valeurs identiques. Les deux contraintes sont complémentaires.');
+add(7, 'CREATE TABLE', 'Une table de brouillon', d => [`Crée brouillons_${d.table} avec exactement id INTEGER PRIMARY KEY et ${d.label} TEXT NOT NULL.`, `CREATE TABLE brouillons_${d.table} (id INTEGER PRIMARY KEY, ${d.label} TEXT NOT NULL);`], 'Les définitions des colonnes sont séparées par des virgules entre parenthèses.');
+add(7, 'UNIQUE', 'Une identité unique', d => [`Crée contacts_${d.table} avec id INTEGER PRIMARY KEY, email TEXT NOT NULL UNIQUE et nom TEXT NOT NULL, dans cet ordre.`, `CREATE TABLE contacts_${d.table} (id INTEGER PRIMARY KEY, email TEXT NOT NULL UNIQUE, nom TEXT NOT NULL);`], 'NOT NULL impose une valeur ; UNIQUE interdit deux valeurs identiques. Les deux contraintes sont complémentaires.');
 add(7, 'FOREIGN KEY', 'Conserver le lien', d => [`Crée favoris avec id INTEGER PRIMARY KEY et cible_id INTEGER NOT NULL référençant ${d.table}(id).`, `CREATE TABLE favoris (id INTEGER PRIMARY KEY, cible_id INTEGER NOT NULL REFERENCES ${d.table}(id));`], 'REFERENCES pointe vers la clé du parent. Une contrainte FOREIGN KEY séparée est également possible.');
 add(7, 'ALTER TABLE ADD', 'Une colonne en plus', d => [`Ajoute à ${d.table} une colonne description de type TEXT, nullable et sans valeur par défaut.`, `ALTER TABLE ${d.table} ADD COLUMN description TEXT;`], 'SQLite accepte ALTER TABLE … ADD COLUMN pour ajouter une colonne.');
 add(7, 'ALTER TABLE RENAME', 'Renommer une colonne', d => [`Dans ${d.table}, renomme la colonne note en commentaire. Conserve les données et les autres colonnes.`, `ALTER TABLE ${d.table} RENAME COLUMN note TO commentaire;`], 'RENAME COLUMN change le nom d’une colonne sans perdre ses valeurs.');
 add(7, 'DROP TABLE', 'Retirer une table', d => [`Supprime la table ${d.events} de la structure. Conserve ${d.table} et ${d.parent}, ainsi que leurs données.`, `DROP TABLE ${d.events};`], 'DROP TABLE supprime la table entière. DELETE FROM conserverait la structure.');
-add(7, 'DEFAULT', 'Une valeur par défaut', d => [`Crée taches avec id INTEGER PRIMARY KEY, titre TEXT NOT NULL et terminee INTEGER NOT NULL DEFAULT 0.`, `CREATE TABLE taches (id INTEGER PRIMARY KEY, titre TEXT NOT NULL, terminee INTEGER NOT NULL DEFAULT 0);`], 'DEFAULT fournit la valeur lorsqu’un INSERT omet cette colonne.');
+add(7, 'DEFAULT', 'Une valeur par défaut', d => [`Crée taches_${d.table} avec id INTEGER PRIMARY KEY, titre TEXT NOT NULL et terminee INTEGER NOT NULL DEFAULT 0.`, `CREATE TABLE taches_${d.table} (id INTEGER PRIMARY KEY, titre TEXT NOT NULL, terminee INTEGER NOT NULL DEFAULT 0);`], 'DEFAULT fournit la valeur lorsqu’un INSERT omet cette colonne.');
 add(7, 'Clé composée', 'Une paire unique', d => [`Crée suivi avec cible_id INTEGER référençant ${d.table}(id), jour TEXT, et une clé primaire composée de (cible_id, jour). N’ajoute pas de NOT NULL explicite.`, `CREATE TABLE suivi (cible_id INTEGER REFERENCES ${d.table}(id), jour TEXT, PRIMARY KEY(cible_id,jour));`], 'Une clé primaire composée identifie la combinaison de colonnes. SQLite a des particularités sur NULL avec ces clés.');
 
 add(8, 'Sous-requête', 'Au-dessus de la moyenne', d => [`Affiche ${d.label} et ${d.metric} de ${d.table} pour les lignes dont ${d.metric} est strictement supérieur à la moyenne globale.`, `SELECT ${d.label}, ${d.metric} FROM ${d.table} WHERE ${d.metric} > (SELECT AVG(${d.metric}) FROM ${d.table});`], 'La sous-requête calcule une valeur scalaire que le filtre peut comparer à chaque ligne.');
@@ -126,7 +126,8 @@ function progressiveHints(p, d, sql) {
   return [p.tip, precise, `Une structure à compléter (les … sont à remplacer) :\n${skeleton}`];
 }
 
-export const exercises = patterns.flatMap((p, index) => Array.from({ length: 4 }, (_, variant) => {
+// Variantes générées modèle par modèle (4 contextes chacun), puis entrelacées dans le parcours.
+const variantsByPattern = patterns.map((p, index) => Array.from({ length: 4 }, (_, variant) => {
   const d = datasets[(index * 4 + variant) % datasets.length];
   const [statement, solutionSql, options = {}] = p.make(d);
   return {
@@ -140,12 +141,18 @@ export const exercises = patterns.flatMap((p, index) => Array.from({ length: 4 }
     explanation: teachingNotes(solutionSql, p.tip),
     notion: p.tip, xp: p.level <= 3 ? 10 : p.level <= 6 ? 20 : 35, examEligible: true, ...options
   };
-})).concat(customExercises);
+}));
+/* Ordre du parcours : dans chaque niveau, le premier contexte de chaque modèle, puis le deuxième, etc.
+   Deux variantes d'un même modèle ne se suivent donc jamais (chaque niveau compte plusieurs modèles). */
+export const exercises = levels.flatMap(level => {
+  const groups = variantsByPattern.filter(group => group[0].level === level.id);
+  return Array.from({ length: 4 }, (_, variant) => groups.map(group => group[variant])).flat();
+}).concat(customExercises);
 export const exerciseById = new Map(exercises.map(e => [e.id, e]));
 
 /* Aide-mémoire : une fiche par notion (la première variante de chaque motif d'exercice).
    Exposé ici pour que la page et son test de cohérence partagent la même construction. */
 export const cheatsheet = levels.map(level => ({
   ...level,
-  examples: exercises.filter(e => e.level === level.id).filter((_, i) => i % 4 === 0)
+  examples: variantsByPattern.filter(group => group[0].level === level.id).map(group => group[0])
 }));
